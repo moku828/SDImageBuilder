@@ -24,12 +24,12 @@ namespace SDImageBuilder
         public void Build()
         {
             OutputSDImageStream = new MemoryStream();
-            long capacity = 8 * 1024 * 1024;
-            Geometry geometry = new Geometry(capacity, 4, 32, 512);
+            long capacity = 64 * 1024 * 1024;
+            Geometry geometry = new Geometry(capacity, 8, 32, 512);
             BiosPartitionedDiskBuilder builder = new BiosPartitionedDiskBuilder(capacity, geometry);
             builder.PartitionTable.Create(WellKnownPartitionType.WindowsFat, false);
             SparseStream partitionContent = SparseStream.FromStream(new MemoryStream((int)(builder.PartitionTable[0].SectorCount * 512)), Ownership.Dispose);
-            FatFileSystem ffs = FatFileSystem.FormatPartition(partitionContent, "TEST", geometry, 0, 16384, 0);
+            FatFileSystem ffs = FatFileSystem.FormatPartition(partitionContent, "TEST", geometry, 0, (int)(capacity / 512) - 32, 0);
             CopyDirectoriesAndFiles(ffs, InputRootDirectory);
             builder.SetPartitionContent(0, partitionContent);
             OutputSDImageStream = builder.Build();
